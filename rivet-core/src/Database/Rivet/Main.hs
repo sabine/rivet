@@ -8,7 +8,7 @@ import           Data.Text      (Text)
 import qualified Data.Text.IO   as T
 import           Database.Rivet
 
-data Mode = MigrateUp | MigrateDown | MigrateStatus
+data Mode = MigrateUp | FakeUp | MigrateDown | MigrateStatus
 
 main :: Monad m =>
         Adaptor m ->
@@ -23,6 +23,14 @@ main adaptor mode migrations = do
          mapM_ (\(name, m) -> do runMigration Up adaptor name m
                                  T.putStrLn ("Ran " <> name))
                toRun
+    FakeUp ->
+      do toRun <- listToMaybe <$> filterM (notRun . fst) migrations
+         case toRun of
+           Nothing -> T.putStrLn "All done."
+           Just migration ->
+             mapM (\(name, _) -> do fakeMigration Up adaptor name
+                                 T.putStrLn ("Faked " <> name))
+               migration
     MigrateDown ->
       do toDown <- dropWhileM (notRun . fst)
                               (reverse migrations)

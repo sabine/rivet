@@ -31,6 +31,9 @@ runMigration :: Direction -> Adaptor m -> Text -> Migration m () -> IO ()
 runMigration dir ad n m = do sequence_ (map (runStep dir ad) (migSteps m))
                              markMigration ad n dir
 
+fakeMigration :: Direction -> Adaptor m -> Text -> IO ()
+fakeMigration dir ad n = markMigration ad n dir
+
 runStep :: Direction -> Adaptor m -> Syntax m -> IO ()
 runStep Up   (Adaptor h _ _ _) (App up _)   = h up
 runStep Down (Adaptor h _ _ _) (App _ down) = h down
