@@ -3,6 +3,7 @@
 module Database.Rivet.Main where
 
 import           Control.Monad
+import           Data.Maybe (listToMaybe)
 import           Data.Monoid
 import           Data.Text      (Text)
 import qualified Data.Text.IO   as T
@@ -27,10 +28,8 @@ main adaptor mode migrations = do
       do toRun <- listToMaybe <$> filterM (notRun . fst) migrations
          case toRun of
            Nothing -> T.putStrLn "All done."
-           Just migration ->
-             mapM (\(name, _) -> do fakeMigration Up adaptor name
-                                 T.putStrLn ("Faked " <> name))
-               migration
+           Just (name, _) -> do fakeMigration Up adaptor name
+                                T.putStrLn ("Faked " <> name)
     MigrateDown ->
       do toDown <- dropWhileM (notRun . fst)
                               (reverse migrations)
